@@ -29,7 +29,7 @@
   },
   {
     "ParameterKey": "AMIid",
-    "ParameterValue": "ami-0e8fd9459bacd0cf9"
+    "ParameterValue": "ami-03746875d916becc0"
   },
   {
     "ParameterKey": "EC2InstanceType",
