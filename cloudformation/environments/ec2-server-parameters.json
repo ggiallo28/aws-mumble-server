@@ -1,0 +1,78 @@
+[
+  {
+    "ParameterKey": "Environment",
+    "ParameterValue": "Production"
+  },
+  {
+    "ParameterKey": "Project",
+    "ParameterValue": "Voice"
+  },
+  {
+    "ParameterKey": "AccountName",
+    "ParameterValue": "YDN"
+  },
+  {
+    "ParameterKey": "Owner",
+    "ParameterValue": "Domina"
+  },
+  {
+    "ParameterKey": "CostCenter",
+    "ParameterValue": "Max"
+  },
+  {
+    "ParameterKey": "RootEBSSize",
+    "ParameterValue": "8"
+  },
+  {
+    "ParameterKey": "RootEBSType",
+    "ParameterValue": "gp2"
+  },
+  {
+    "ParameterKey": "AMIid",
+    "ParameterValue": "ami-0e8fd9459bacd0cf9"
+  },
+  {
+    "ParameterKey": "EC2InstanceType",
+    "ParameterValue": "t2.micro"
+  },
+  {
+    "ParameterKey": "BastionHostInstanceName",
+    "ParameterValue": "Mumble"
+  },
+  {
+    "ParameterKey": "KeyName",
+    "ParameterValue": "BastionHost-YDN"
+  },
+  {
+    "ParameterKey": "ReservedEIP",
+    "ParameterValue": "63.34.155.179"
+  },
+    {
+    "ParameterKey": "PublicSubnetA",
+    "ParameterValue": "subnet-d5e682b3"
+  },
+  {
+    "ParameterKey": "PublicSubnetB",
+    "ParameterValue": "subnet-1c780f54"
+  },
+  {
+    "ParameterKey": "PublicSubnetB",
+    "ParameterValue": "subnet-1c780f54"
+  },
+  {
+    "ParameterKey": "VPCId",
+    "ParameterValue": "vpc-1d7e547b"
+  },
+  {
+    "ParameterKey": "DefaultSecurityGroup",
+    "ParameterValue": "sg-12a1da63"
+  },
+  {
+    "ParameterKey": "CodeRepository",
+    "ParameterValue": "sg-12a1da63"
+  },
+  {
+    "ParameterKey": "Version",
+    "ParameterValue": "0"
+  }
+]

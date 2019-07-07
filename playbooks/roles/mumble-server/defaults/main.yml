@@ -1,0 +1,18 @@
+---
+mumble_user: 'mumble-server'
+mumble_group: 'mumble-server'
+
+mumble_database: '/var/lib/{{ mumble_user }}/{{ mumble_user }}.sqlite'
+
+# All things ice related
+mumble_ice_host: '127.0.0.1'
+mumble_ice_port: '6502'
+mumble_ice_url: '{{ mumble_ice_host }}:{{ mumble_ice_port }}'
+mumble_icesecretwrite: 'admin'
+
+# system related
+mumble_ini_location: '/etc/mumble-server.ini'
+mumble_process_id: '/var/run/{{ mumble_user }}/{{ mumble_user }}.pid'
+
+mumble_password: 'user'
+mumble_superuser_pw: 'admin'

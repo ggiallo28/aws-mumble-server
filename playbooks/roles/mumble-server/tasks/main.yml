@@ -1,0 +1,48 @@
+---
+- include: set-default-variables.yml
+
+- name: Update repositories
+  apt:
+    update_cache: yes
+
+- name: Install some prerequisites
+  apt:
+    pkg: python-software-properties
+    state: present
+
+- name: Add Mumble ppa
+  apt_repository:
+    repo: 'ppa:mumble/release'
+
+- name: Install Mumble Server
+  apt:
+    name: mumble-server
+    state: present
+
+- name: Add Mumble group
+  group:
+    name: '{{ mumble_group }}'
+    system: yes
+    state: present
+  become: yes
+
+- name: Add Murmur configuration
+  template:
+    src: murmur.ini.j2
+    dest: '{{ mumble_ini_location }}'
+    owner: root
+    group: '{{ mumble_group }}'
+  notify: Restart Mumble Server
+
+- name: Add logrotate
+  template:
+    src: logrotate.j2
+    dest: /etc/logrotate.d/murmur
+    group: '{{ mumble_group }}'
+
+- name: Set SuperUser password
+  shell: murmurd -ini {{ mumble_ini_location }} -supw {{ mumble_superuser_pw }}
+  when: mumble_superuser_pw != ''
+  notify: Restart Mumble Server
+  tags:
+    - skip_ansible_lint

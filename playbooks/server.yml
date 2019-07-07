@@ -1,0 +1,10 @@
+---
+- name: Configure the EC2 Server
+  hosts: localhost
+  connection: local
+  gather_facts: yes
+
+  vars_files:
+    - ./overrides.yml
+
+- include: mumble.yml

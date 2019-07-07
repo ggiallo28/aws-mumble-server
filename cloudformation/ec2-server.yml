@@ -1,0 +1,208 @@
+---
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Architecture composed by an autoscaling group in a 1:1 configuration
+Parameters:
+  Environment:
+    Description: Environment name.
+    Type: String
+  Project:
+    Description: Project ID.
+    Type: String
+  AccountName:
+    Type: String
+  Owner:
+    Type: String
+  CostCenter:
+    Type: String
+  RootEBSSize:
+    Description: Root Instance Volume
+    Type: String
+    Default: "8"
+  RootEBSType:
+    Description: General Purpose SSD
+    Type: String
+    Default: gp2
+    AllowedValues:
+      - standard
+      - gp2
+  AMIid:
+    Type: String
+  BastionHostInstanceName:
+    Type: String
+  EC2InstanceType:
+    Description: EC2 instance type
+    Type: String
+    Default: t2.micro
+    AllowedValues:
+    - t2.nano
+    - t2.micro
+    - t2.small
+    - t2.medium
+    ConstraintDescription: must be a valid EC2 instance type.
+  KeyName:
+    Description: The EC2 Key Pair to allow SSH access to the instances
+    Type: AWS::EC2::KeyPair::KeyName
+    ConstraintDescription: must be the name of an existing EC2 KeyPair.
+  ReservedEIP:
+    Type: String
+  PublicSubnetA:
+    Type: String
+  PublicSubnetB:
+    Type: String
+  VPCId:
+    Type: String
+  DefaultSecurityGroup:
+    Type: String
+  CodeCommitRepository:
+    Type: String
+  Version:
+    Type: String
+
+Resources:
+  BastionInstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      Path: "/"
+      Roles:
+      - Ref: BastionIAMRole
+  BastionIAMRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service:
+            - ec2.amazonaws.com
+          Action:
+          - sts:AssumeRole
+      Path: "/"
+      Policies:
+      - PolicyName: elasticip
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+          - Effect: Allow
+            Action:
+            - "ec2:AssociateAddress"
+            - "ec2:Describe*"
+            - "s3:*"
+            - "autoscaling:*"
+            Resource:
+            - '*'
+      - PolicyName: logs
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+          - Effect: Allow
+            Action:
+            - logs:CreateLogGroup
+            - logs:CreateLogStream
+            - logs:PutLogEvents
+            - logs:DescribeLogStreams
+            Resource:
+            - arn:aws:logs:*:*:*
+
+  AutoScalingGroup:
+    Type: AWS::AutoScaling::AutoScalingGroup
+    UpdatePolicy:
+      AutoScalingRollingUpdate:
+        MinInstancesInService: '1'
+        MaxBatchSize: '1'
+        PauseTime: PT1M
+    Properties:
+      Tags:
+      - Key: Name
+        Value:
+          Fn::Join:
+          - "-"
+          - - Ref: Project
+            - Ref: Environment
+            - Ref: BastionHostInstanceName
+            - !Join ["",[v,!Ref Version]]
+        PropagateAtLaunch: 'true'
+      - Key: CostCenter
+        Value: !Ref CostCenter
+        PropagateAtLaunch: 'true'
+      - Key: Project
+        Value: !Ref Project
+        PropagateAtLaunch: 'true'
+      - Key: Environment
+        Value: !Ref Environment
+        PropagateAtLaunch: 'true'
+      LaunchConfigurationName:
+        Ref: LaunchConfiguration
+      MinSize: 1
+      MaxSize: 2
+      VPCZoneIdentifier:
+        - !Ref PublicSubnetA
+        - !Ref PublicSubnetB
+  LaunchConfiguration:
+    Type: AWS::AutoScaling::LaunchConfiguration
+    Properties:
+      IamInstanceProfile: !Ref BastionInstanceProfile
+      KeyName: !Ref KeyName
+      ImageId: !Ref AMIid
+      BlockDeviceMappings:
+      - DeviceName: /dev/sda1
+        Ebs:
+            VolumeType: !Ref RootEBSType
+            VolumeSize: !Ref RootEBSSize
+      SecurityGroups:
+      - !Ref CustomSecurityGroup
+      - !Ref SSHSecurityGroup
+      - !Ref DefaultSecurityGroup
+      InstanceType: !Ref EC2InstanceType
+      UserData:
+        Fn::Base64:
+          !Sub |
+            #!/bin/bash -x
+            apt-get update
+            apt-get install software-properties-common
+            apt-add-repository ppa:ansible/ansible
+            apt-get update
+            apt-get install -y ansible
+            apt-get install -y git
+            apt-get install -y python-pip
+            pip install aws-ec2-assign-elastic-ip
+            aws-ec2-assign-elastic-ip --valid-ips ${ReservedEIP}
+            git clone ${CodeRepository}
+            ansible-playbook /xpeppers-cloudformation-sample/single-ec2-bastion/ansible/localhost-configure.yml
+
+  CustomSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      VpcId: !Ref VPCId
+      GroupDescription: Add here custom rules
+      SecurityGroupIngress:
+      - IpProtocol: "udp"
+        FromPort: "64738"
+        ToPort: "64738"
+        CidrIp: 0.0.0.0/0
+  # https://www.vultr.com/docs/how-to-install-teamspeak-3-server-on-ubuntu-16-04-64-bit
+  # https://theg33k.org/2016/03/17/creare-il-proprio-server-teamspeak-su-amazon-ec2/
+  SSHSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      VpcId: !Ref VPCId
+      GroupDescription: Enable SSH access
+      SecurityGroupIngress:
+      - IpProtocol: "tcp"
+        FromPort: "22"
+        ToPort: "22"
+        CidrIp: 0.0.0.0/0
+      - IpProtocol: "tcp"
+        FromPort: "22"
+        ToPort: "22"
+        SourceSecurityGroupId: !Ref DefaultSecurityGroup
+
+Outputs:
+  SSHSecurityGroup:
+    Description: SSH Security group
+    Value:
+      Fn::GetAtt:
+      - SSHSecurityGroup
+      - GroupId
+    Export:
+      Name: !Sub "${AWS::StackName}-bastion-host-security-group"

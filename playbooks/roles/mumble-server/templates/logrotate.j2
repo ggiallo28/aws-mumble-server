@@ -1,0 +1,10 @@
+/var/log/{{ mumble_user }}/{{ mumble_user }}.log {
+  weekly
+  rotate 7
+  compress
+  delaycompress
+  missingok
+  postrotate
+    start-stop-daemon --quiet --oknodo --stop --signal 1 --exec /usr/sbin/murmurd --user {{ mumble_user }} --pidfile {{ mumble_process_id }}
+  endscript
+}
