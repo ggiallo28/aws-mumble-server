@@ -1,8 +1,7 @@
 REGION=eu-west-1
 REPOSITORYURL=https://github.com/ggiallo28/aws-mumble-server.git
+NAME := ydn-mumble-server
 
-
-#NAME := $(shell /bin/cat config.yaml | sed -n 's/NAME: //p')
 ts := $(shell /bin/date "+%Y-%m-%d-%H-%M-%S")
 .create:
 	@echo "Stack does not exists, create it."
@@ -36,14 +35,14 @@ clean:
 	git remote add origin $(REPOSITORYURL)
 
 server:
-	aws cloudformation describe-stacks --stack-name $(NAME)-pipeline --region $(REGION) && \
+	aws cloudformation describe-stacks --stack-name $(NAME) --region $(REGION) && \
 	make .change \
-		STACK_NAME=$(NAME)-pipeline \
-		PARAMETERS=file://cloudformation/glue-pipeline.json \
-		TEMPLATE_BODY=file://cloudformation/glue-pipeline.yaml || \
+		STACK_NAME=$(NAME) \
+		PARAMETERS=file://cloudformation/environments/ec2-server-parameters.json \
+		TEMPLATE_BODY=file://cloudformation/ec2-server.yaml || \
 	make .create \
-		STACK_NAME=$(NAME)-pipeline \
-		PARAMETERS=file://cloudformation/glue-pipeline.json \
-		TEMPLATE_BODY=file://cloudformation/glue-pipeline.yaml ;
+		STACK_NAME=$(NAME) \
+		PARAMETERS=file://cloudformation/environments/ec2-server-parameters.json \
+		TEMPLATE_BODY=file://cloudformation/ec2-server.yaml ;
 
 

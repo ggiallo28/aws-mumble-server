@@ -7,4 +7,4 @@
   vars_files:
     - ./overrides.yml
 
-- include: mumble.yml
+- import_playbook: mumble.yml

@@ -49,11 +49,13 @@ Parameters:
     Type: String
   PublicSubnetB:
     Type: String
+  PublicSubnetC:
+    Type: String
   VPCId:
     Type: String
   DefaultSecurityGroup:
     Type: String
-  CodeCommitRepository:
+  CodeRepository:
     Type: String
   Version:
     Type: String
@@ -78,6 +80,8 @@ Resources:
           Action:
           - sts:AssumeRole
       Path: "/"
+      ManagedPolicyArns:
+      - arn:aws:iam::aws:policy/service-role/AmazonEC2RoleforSSM
       Policies:
       - PolicyName: elasticip
         PolicyDocument:
@@ -138,6 +142,7 @@ Resources:
       VPCZoneIdentifier:
         - !Ref PublicSubnetA
         - !Ref PublicSubnetB
+        - !Ref PublicSubnetC
   LaunchConfiguration:
     Type: AWS::AutoScaling::LaunchConfiguration
     Properties:
@@ -162,13 +167,14 @@ Resources:
             apt-get install software-properties-common
             apt-add-repository ppa:ansible/ansible
             apt-get update
-            apt-get install -y ansible
             apt-get install -y git
             apt-get install -y python-pip
             pip install aws-ec2-assign-elastic-ip
             aws-ec2-assign-elastic-ip --valid-ips ${ReservedEIP}
-            git clone ${CodeRepository}
-            ansible-playbook /xpeppers-cloudformation-sample/single-ec2-bastion/ansible/localhost-configure.yml
+            git clone ${CodeRepository} ansible
+            cd ansible
+            pip install -r requirements.txt
+            ansible-playbook --inventory-file inventory playbooks/server.yml
 
   CustomSecurityGroup:
     Type: AWS::EC2::SecurityGroup

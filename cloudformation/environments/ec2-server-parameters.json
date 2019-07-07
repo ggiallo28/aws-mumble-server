@@ -45,19 +45,19 @@
   },
   {
     "ParameterKey": "ReservedEIP",
-    "ParameterValue": "63.34.155.179"
+    "ParameterValue": "34.250.244.11"
   },
     {
     "ParameterKey": "PublicSubnetA",
+    "ParameterValue": "subnet-1c780f54"
+  },
+  {
+    "ParameterKey": "PublicSubnetB",
+    "ParameterValue": "subnet-86fd5cdc"
+  },
+  {
+    "ParameterKey": "PublicSubnetC",
     "ParameterValue": "subnet-d5e682b3"
-  },
-  {
-    "ParameterKey": "PublicSubnetB",
-    "ParameterValue": "subnet-1c780f54"
-  },
-  {
-    "ParameterKey": "PublicSubnetB",
-    "ParameterValue": "subnet-1c780f54"
   },
   {
     "ParameterKey": "VPCId",
@@ -69,7 +69,7 @@
   },
   {
     "ParameterKey": "CodeRepository",
-    "ParameterValue": "sg-12a1da63"
+    "ParameterValue": "https://github.com/ggiallo28/aws-mumble-server.git"
   },
   {
     "ParameterKey": "Version",
